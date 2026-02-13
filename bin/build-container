@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+REPO_ROOT="$(dirname "$SCRIPT_DIR")"
+
+IMAGE_NAME="${1:-claude-uv:latest}"
+
+# Extract minimum Python version from pyproject.toml (e.g. ">=3.13" -> "3.13")
+PYTHON_VERSION="$(
+  sed -n 's/^requires-python.*>=\([0-9.]*\).*/\1/p' "$REPO_ROOT/pyproject.toml"
+)"
+PYTHON_VERSION="${PYTHON_VERSION:-3.13}"
+
+exec podman build \
+  --build-arg "PYTHON_VERSION=$PYTHON_VERSION" \
+  -t "$IMAGE_NAME" \
+  -f "$REPO_ROOT/Containerfile.claude" \
+  "$REPO_ROOT"

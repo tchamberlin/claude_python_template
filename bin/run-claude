@@ -1,0 +1,63 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Repo root (or current dir)
+if git rev-parse --show-toplevel >/dev/null 2>&1; then
+  ROOT="$(git rev-parse --show-toplevel)"
+else
+  ROOT="$PWD"
+fi
+ROOT="$(realpath "$ROOT")"
+
+BASE="$(basename "$ROOT")"
+HASH="$(printf '%s' "$ROOT" | { sha1sum 2>/dev/null || shasum -a 1; } | awk '{print $1}' | cut -c1-10)"
+
+# Unique per invocation so multiple can run simultaneously
+STAMP="$(date +%Y%m%d-%H%M%S)"
+NAME="claude-${BASE}-${HASH}-${STAMP}-$$"
+
+# Ensure host-side auth file exists
+touch "$HOME/.claude.json"
+
+# Per-repo state dirs (plans, settings, etc. are grouped by repo)
+CACHE_BASE="${XDG_CACHE_HOME:-$HOME/.cache}/claude-podman"
+STATE_BASE="${XDG_STATE_HOME:-$HOME/.local/state}/claude-podman"
+
+CLAUDE_DIR="${STATE_BASE}/claude/${HASH}"
+UV_CACHE="${CACHE_BASE}/uv/${HASH}"
+VENV_DIR="${STATE_BASE}/venvs/${HASH}/${STAMP}-$$"
+
+mkdir -p "$CLAUDE_DIR" "$UV_CACHE" "$VENV_DIR"
+
+# Prune venv dirs older than 7 days
+find "${STATE_BASE}/venvs/${HASH}" -mindepth 1 -maxdepth 1 -type d -mtime +7 -exec rm -rf {} + 2>/dev/null || true
+
+# Build flags
+CLAUDE_FLAGS=()
+if [[ "${CLAUDE_SAFE_MODE:-0}" != "1" ]]; then
+  CLAUDE_FLAGS+=(--dangerously-skip-permissions)
+fi
+
+exec podman run --rm -it \
+  --name "$NAME" \
+  --userns=keep-id \
+  --passwd-entry "claude:x:\$UID:\$GID:Claude:/home/claude:/bin/bash" \
+  --label "io.claude.repo=$ROOT" \
+  --label "io.claude.repo_hash=$HASH" \
+  --label "io.claude.session=$STAMP-$$" \
+  -e HOME=/home/claude \
+  -e TERM="${TERM:-xterm-256color}" \
+  -e COLORTERM="${COLORTERM:-truecolor}" \
+  -e UV_CACHE_DIR=/uv-cache \
+  -e UV_PROJECT_ENVIRONMENT=/venv \
+  -v "$ROOT":"$ROOT":z \
+  -v "$CLAUDE_DIR":/home/claude/.claude:z \
+  -v "$HOME/.claude/.credentials.json":/home/claude/.claude/.credentials.json:z \
+  -v "$HOME/.claude/settings.json":/home/claude/.claude/settings.json:z \
+  -v "$HOME/.claude.json":/home/claude/.claude.json:z \
+  -v "$UV_CACHE":/uv-cache:z \
+  -v "$VENV_DIR":/venv:z \
+  -w "$ROOT" \
+  "${CLAUDE_IMAGE:-claude-uv:latest}" \
+  "${CLAUDE_FLAGS[@]}" \
+  "$@"

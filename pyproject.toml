@@ -1,0 +1,93 @@
+[project]
+name = "claude-python-template"
+version = "0.1.0"
+description = ""
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = []
+
+[project.scripts]
+claude-python-template = "claude_python_template.main:main"
+
+[build-system]
+requires = ["uv_build>=0.7,<0.8"]
+build-backend = "uv_build"
+
+[tool.ruff]
+line-length = 120
+extend-exclude = ["stubs"]
+
+[tool.ruff.lint]
+select = [
+    "F",     # pyflakes
+    "E",     # pycodestyle errors
+    "W",     # pycodestyle warnings
+    "B",     # flake8-bugbear
+    "I",     # isort
+    "NPY",   # numpy
+    "RUF",   # ruff-specific
+    "PD",    # pandas-vet
+    "T10",   # flake8-debugger
+    "C4",    # flake8-comprehensions
+    "SIM",   # flake8-simplify
+    "UP",    # pyupgrade
+    "PLE",   # pylint-error
+    "PLW",   # pylint-warning
+    "G",     # flake8-logging-format
+    "INP",   # flake8-no-pep420
+    "EM",    # error message
+    "TRY",   # tryceratops
+    "COM",   # flake8-commas
+    "DTZ",   # flake8-datetimez
+    "PERF",  # performance
+    "FURB",  # refurb
+    "ASYNC", # async
+    "A",     # flake8-builtins
+    "FA",    # future annotations
+    "EXE",   # executable
+    "LOG",   # logging
+    "ICN",   # import conventions
+    "Q",     # quotes
+    "RSE",   # raise
+    "RET",   # return
+    "YTT",   # sys.version
+    "PT",    # flake8-pytest-style
+    "SLOT",  # slots
+    "TC",    # type checking
+]
+fixable = ["ALL"]
+unfixable = ["B"]
+ignore = [
+    "E501",     # line-too-long (formatter handles)
+    "E741",     # ambiguous variable name
+    "B008",     # function-call-in-default-argument (typer pattern)
+    "TRY300",   # try-consider-else (style preference)
+    "TRY301",   # raise-within-try (acceptable pattern)
+    "TRY401",   # verbose-log-message (redundant exc in logging is fine)
+    "G004",     # logging-f-string
+    "G201",     # logging-exc-info (prefer .error with exc_info sometimes)
+    "PLR0915",  # too-many-statements
+    "PLR0917",  # too-many-positional
+    "PLR2004",  # magic-value-comparison
+    "PLR0912",  # too-many-branches
+    "PLR0913",  # too-many-arguments
+    "PLR0914",  # too-many-locals
+    "PLW0603",  # global-statement (sometimes necessary)
+    "RUF067",   # non-empty-init-module (PEP 420 style preference)
+    "SIM105",   # suppressible-exception (prefer explicit try-except-pass)
+    "SIM102",   # collapsible-if (readability preference)
+    "SIM108",   # if-else-block-instead-of-if-exp (readability preference)
+    "SIM113",   # enumerate-for-loop (preference)
+    "FURB101",  # read-whole-file (explicit is fine)
+    "DTZ",      # flake8-datetimez (timezone handling is project-specific)
+    "PLW1510",  # subprocess-run-without-check (intentional in some cases)
+    "COM812"
+]
+preview = true
+
+[tool.ruff.lint.isort]
+combine-as-imports = true
+
+[tool.pytest.ini_options]
+addopts = "--import-mode=importlib"
+testpaths = ["packages"]
