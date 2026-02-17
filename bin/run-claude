@@ -16,8 +16,11 @@ HASH="$(printf '%s' "$ROOT" | { sha1sum 2>/dev/null || shasum -a 1; } | awk '{pr
 STAMP="$(date +%Y%m%d-%H%M%S)"
 NAME="claude-${BASE}-${HASH}-${STAMP}-$$"
 
-# Ensure host-side auth file exists
+# Ensure host-side auth files exist
 touch "$HOME/.claude.json"
+mkdir -p "$HOME/.claude"
+touch "$HOME/.claude/.credentials.json"
+touch "$HOME/.claude/settings.json"
 
 # Per-repo state dirs (plans, settings, etc. are grouped by repo)
 CACHE_BASE="${XDG_CACHE_HOME:-$HOME/.cache}/claude-podman"
