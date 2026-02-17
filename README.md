@@ -4,15 +4,17 @@ A Python project template designed for developing with [Claude Code](https://cla
 
 ## Prerequisites
 
-- Python 3.13+
-- [uv](https://docs.astral.sh/uv/) package manager
-- [Podman](https://podman.io/) (for container workflow)
+- [Podman](https://podman.io/)
 
 ## Quick Start
 
 ```bash
-uv sync
-uv run claude-python-template
+git clone https://github.com/tchamberlin/claude_python_template
+cd claude_python_template
+./bin/build-container                              # build the container image
+ln -s $(readlink -f bin/run-claude) ~/.local/bin/   # install the wrapper
+alias claude=run-claude                            # convenience alias
+claude                                             # run claude in the container
 ```
 
 ## Development
