@@ -12,7 +12,13 @@ PYTHON_VERSION="$(
 )"
 PYTHON_VERSION="${PYTHON_VERSION:-3.13}"
 
+BUILD_FLAGS=()
+if [[ "${CLAUDE_NO_CACHE:-0}" == "1" ]]; then
+  BUILD_FLAGS+=(--no-cache)
+fi
+
 exec podman build \
+  "${BUILD_FLAGS[@]}" \
   --build-arg "PYTHON_VERSION=$PYTHON_VERSION" \
   -t "$IMAGE_NAME" \
   -f "$REPO_ROOT/Containerfile.claude" \
